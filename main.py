@@ -179,7 +179,7 @@ def get_db_data():
     df = df.sort_values(by="datetime").reset_index()
     return jsonify(df.to_dict())
 
-@app.route('/api/v0/DELETE/wipe_data', methods=['POST'])
+@app.route('/api/v0/DELETE/wipe_data', methods=['GET'])
 def wipe_data():
     if "secret" in request.args:
         if request.args["secret"] == "boludez":
