@@ -56,8 +56,8 @@ def get_demand():
         df = df.drop(["percentage"], axis=1)
         #I end up with a dataframe with "datetime" and "value" columns
         #I connect to my database in railway
-        #engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
-        engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
+        engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
+        #engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
         #I collect what I already saved in the database
         existing_data_df = pd.read_sql_query(text("""SELECT * FROM electric_grid"""), con = engine.connect())
         #I delete from new_entries_df all lines which are already saved in my database 
@@ -183,8 +183,8 @@ def get_db_data():
 def wipe_data():
     if "secret" in request.args:
         if request.args["secret"] == "boludez":
-            #engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
-            engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
+            engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
+            #engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
             with engine.begin() as connection:
                 connection.execute(text("""TRUNCATE TABLE electric_grid RESTART IDENTITY"""))
                 #connection.execute(f"REINDEX TABLE electric_grid")
