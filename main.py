@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return jsonify({"Choo Choo": "Welcome to your Flask app 🚅"})
+    return render_template("home.html")
 
 @app.route('/api/v0/GET/get_demand', methods=['GET'])
 def get_demand():
@@ -132,21 +132,33 @@ def get_demand():
             
         # Create the plot
         fig = Figure(figsize=(9,7))
-        plt.figure(figsize=(9, 7))
         axis = fig.add_subplot(1,1,1)
         if style=="line":
-            axis.plot(plot_df["datetime"], plot_df["value"])
+            if orientation=="vertical" or orientation=="v":
+                axis.plot(plot_df["datetime"], plot_df["value"])
+            else:
+                axis.plot(plot_df["value"], plot_df["datetime"])
         else:
-            axis.bar(plot_df["datetime"], plot_df["value"])
+            if orientation=="vertical" or orientation=="v":
+                axis.bar(plot_df["datetime"], plot_df["value"])
+            else:
+                axis.barh(plot_df["datetime"], plot_df["value"])
 
         axis.plot(plot_df["datetime"], plot_df["value"])
         axis.set_xlabel(f"{t_resolution}s")
         axis.set_ylabel("Electric demand")
         axis.set_title(f"Electric demand from {start_date} to {end_date} in {t_resolution}")
-        x = plot_df["datetime"]
-        xlabels = plot_df["datetime"]
-        axis.set_xticks(x)
-        axis.set_xticklabels(xlabels, rotation=60)
+        if orientation=="vertical" or orientation=="v":
+            x = plot_df["datetime"]
+            xlabels = plot_df["datetime"]
+            axis.set_xticks(x)
+            axis.set_xticklabels(xlabels, rotation=60)
+        else:
+            y = plot_df["datetime"]
+            ylabels = plot_df["datetime"]
+            axis.set_yticks(y)
+            axis.set_yticklabels(ylabels, rotation=60)
+        fig.tight_layout()
 
         # Convert the plot to a PNG image
         canvas = FigureCanvas(fig)
@@ -164,18 +176,19 @@ def get_db_data():
     #connect to database (change it if you want to use other database)
     engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
     if "start_date" in request.args:
-        start_date = pd.to_datetime(request.args["start_date"]).tz_localize("Europe/Madrid")
+        start_date = pd.to_datetime(request.args["start_date"])
     else:
-        start_date = pd.to_datetime("1700-01-01").tz_localize("Europe/Madrid")
+        start_date = pd.to_datetime("1700-01-01")
     if "end_date" in request.args:
-        end_date = pd.to_datetime(request.args["end_date"]).tz_localize("Europe/Madrid")
+        end_date = pd.to_datetime(request.args["end_date"])
     else:
-        end_date = pd.to_datetime("2100-01-01").tz_localize("Europe/Madrid")
-    #I would like to do it in sql directly, but it was not possible to save the column in railway 
-    #as datetime, so I had to save them as strings and now I cannot make comparisons with dates 
-    df = pd.read_sql_query(text("""SELECT * FROM electric_grid"""), con = engine.connect())
+        end_date = pd.to_datetime("2100-01-01")   
+    query = f"""SELECT * FROM electric_grid
+            WHERE TO_DATE(datetime, 'YYYY-MM-DD') 
+            BETWEEN TO_DATE('{start_date}','YYYY-MM-DD')
+            AND TO_DATE ('{end_date}','YYYY-MM-DD');"""
+    df = pd.read_sql_query(text(query), con = engine.connect())
     df["datetime"] = pd.to_datetime(df["datetime"])
-    df = df[(df["datetime"]>start_date) & (df["datetime"]<end_date)]
     df = df.sort_values(by="datetime").reset_index()
     return jsonify(df.to_dict())
 

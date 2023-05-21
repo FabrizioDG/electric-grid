@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Electricity Demand</title>
+</head>
+<body>
+    <h1>Electricity demand App</h1>
+
+    <h2>Select an Endpoint:</h2>
+    <form id="action" action="" method="GET">
+        <label for="endpoint-form">Endpoint:</label>
+        <select name="endpoint" id="endpoint">
+            <option value="/api/v0/GET/get_demand">Get Demand</option>
+            <option value="/api/v0/GET/get_db_data">Get DB</option>
+            <option value="/api/v0/DELETE/wipe_data">Wipe All</option>
+        </select>
+        <br><br>
+
+        <h2>Parameters:</h2>
+
+        <div id="date-params">
+            <label for="start_date">Start Date:</label>
+            <input type="text" name="start_date" id="start_date" placeholder="YYYY-MM-DD">
+            <label for="end_date">End Date:</label>
+            <input type="text" name="end_date" id="end_date" placeholder="YYYY-MM-DD">
+        </div>
+
+        <div id="get-demand-params" style="display: none;">
+            <label for="time_resolution">Time Resolution:</label>
+            <select name="time_resolution" id="time_resolution">
+                <option value="day">Daily</option>
+                <option value="hour">Hourly</option>
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+            </select>
+            <label for="plot_type">Plot Type:</label>
+            <select name="plot_type" id="plot_type">
+                <option value="line">Line</option>
+                <option value="bar">Bar</option>
+            </select>
+            <label for="orientation">Orientation:</label>
+            <select name="orientation" id="orientation">
+                <option value="vertical">Vertical</option>
+                <option value="horizontal">Horizontal</option>
+            </select>
+        </div>
+
+
+        <div id="wipe-all-params" style="display: none;">
+            <label for="secret">Secret:</label>
+            <input type="text" name="secret" id="secret">
+        </div>
+
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        // Show/hide parameter sections based on the selected endpoint
+        var endpointSelect = document.getElementById("endpoint");
+        var getDemandParams = document.getElementById("get-demand-params");
+        var getDbParams = document.getElementById("get-db-params");
+        var wipeAllParams = document.getElementById("wipe-all-params");
+        var endpointForm = document.getElementById("action");
+        
+        endpointSelect.addEventListener("change", function() {
+            var selectedEndpoint = endpointSelect.value;
+
+            if (selectedEndpoint === "/api/v0/GET/get_demand") {
+                getDemandParams.style.display = "block";
+                getDbParams.style.display = "none";
+                wipeAllParams.style.display = "none";
+                endpointForm.action = "/api/v0/GET/get_demand";
+            } else if (selectedEndpoint === "/api/v0/GET/get_db_data") {
+                getDemandParams.style.display = "none";
+                getDbParams.style.display = "block";
+                wipeAllParams.style.display = "none";
+                endpointForm.action = "/api/v0/GET/get_db_data";
+            } else if (selectedEndpoint === "/api/v0/DELETE/wipe_data") {
+                getDemandParams.style.display = "none";
+                getDbParams.style.display = "none";
+                wipeAllParams.style.display = "block";
+                endpointForm.action = "/api/v0/DELETE/wipe_data";
+            } else {
+                getDemandParams.style.display = "none";
+                getDbParams.style.display = "none";
+                wipeAllParams.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
