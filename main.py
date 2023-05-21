@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request, render_template
 import os
 from sqlalchemy import create_engine, text
 import pandas as pd
-import json
 import requests
 from datetime import datetime
 import base64
