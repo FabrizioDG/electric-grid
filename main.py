@@ -56,7 +56,7 @@ def get_demand():
         df = df.drop(["percentage"], axis=1)
         #I end up with a dataframe with "datetime" and "value" columns
         #I connect to my database in railway
-        engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
+        engine = create_engine("postgresql://postgres:B4ArTqJVlIRg3NGXSL3x@containers-us-west-82.railway.app:6770/railway")
         #engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
         #I collect what I already saved in the database
         existing_data_df = pd.read_sql_query(text("""SELECT * FROM electric_grid"""), con = engine.connect())
@@ -98,20 +98,20 @@ def get_demand():
                             for day in days:
                                 df_tmp3 = df_tmp2[df_tmp2["day"]==day]
                                 if len(df_tmp3)>0:
-                                    value = df_tmp3.groupby("day")["value"].mean().iloc[0]
+                                    value = df_tmp3.groupby("day")["value"].sum().iloc[0]
                                     dictio["year"].append(year)
                                     dictio["month"].append(month)
                                     dictio["day"].append(day)
                                     dictio["value"].append(value)
                         else:
                             if len(df_tmp2)>0:
-                                value = df_tmp2.groupby("month")["value"].mean().iloc[0]
+                                value = df_tmp2.groupby("month")["value"].sum().iloc[0]
                                 dictio["year"].append(year)
                                 dictio["month"].append(month)
                                 dictio["value"].append(value)
                 else:
                     if len(df_tmp1)>0:
-                        value = df_tmp1.groupby("year")["value"].mean().iloc[0]
+                        value = df_tmp1.groupby("year")["value"].sum().iloc[0]
                         dictio["year"].append(year)
                         dictio["value"].append(value)
             if t_resolution=="month":
@@ -130,7 +130,6 @@ def get_demand():
         elif t_resolution=="hour":
             plot_df = df
             
-        # Create the plot
         fig = Figure(figsize=(9,7))
         axis = fig.add_subplot(1,1,1)
         if style=="line":
@@ -144,20 +143,23 @@ def get_demand():
             else:
                 axis.barh(plot_df["datetime"], plot_df["value"])
 
-        axis.plot(plot_df["datetime"], plot_df["value"])
-        axis.set_xlabel(f"{t_resolution}s")
-        axis.set_ylabel("Electric demand")
-        axis.set_title(f"Electric demand from {start_date} to {end_date} in {t_resolution}")
+
+        axis.set_title(f"Electric demand from {start_date} to {end_date} in {t_resolution}s")
+        plt.tight_layout()
         if orientation=="vertical" or orientation=="v":
             x = plot_df["datetime"]
             xlabels = plot_df["datetime"]
             axis.set_xticks(x)
             axis.set_xticklabels(xlabels, rotation=60)
+            axis.set_xlabel(f"{t_resolution}")
+            axis.set_ylabel("Electric demand")
         else:
             y = plot_df["datetime"]
             ylabels = plot_df["datetime"]
             axis.set_yticks(y)
-            axis.set_yticklabels(ylabels, rotation=60)
+            axis.set_yticklabels(ylabels, rotation=0)
+            axis.set_ylabel(f"{t_resolution}")
+            axis.set_xlabel("Electric demand")
         fig.tight_layout()
 
         # Convert the plot to a PNG image
@@ -174,7 +176,7 @@ def get_demand():
 @app.route('/api/v0/GET/get_db_data', methods=['GET'])
 def get_db_data():
     #connect to database (change it if you want to use other database)
-    engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
+    engine = create_engine("postgresql://postgres:B4ArTqJVlIRg3NGXSL3x@containers-us-west-82.railway.app:6770/railway")
     if "start_date" in request.args:
         start_date = pd.to_datetime(request.args["start_date"])
     else:
@@ -196,7 +198,7 @@ def get_db_data():
 def wipe_data():
     if "secret" in request.args:
         if request.args["secret"] == "boludez":
-            engine = create_engine("postgresql://postgres:dH2GNTdVNNqv5iwDOfoA@containers-us-west-90.railway.app:5626/railway")
+            engine = create_engine("postgresql://postgres:B4ArTqJVlIRg3NGXSL3x@containers-us-west-82.railway.app:6770/railway")
             #engine = create_engine("postgresql://postgres:KtT9gHOw6nVx6QZyRZP0@containers-us-west-189.railway.app:5627/railway")
             with engine.begin() as connection:
                 connection.execute(text("""TRUNCATE TABLE electric_grid RESTART IDENTITY"""))
